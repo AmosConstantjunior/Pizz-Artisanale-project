@@ -43,6 +43,8 @@ body {
     height: 10vh;
     background-color: black;
     color: white;
+      font-family: "Imperial Script", cursive;
+
 }
 
 #myNavbar a {
