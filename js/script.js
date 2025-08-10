@@ -366,7 +366,99 @@ async function loadBoissons() {
   }
 }
 
+async function loadTestimonials() {
+  const testimonialsRef = collection(db, "reviews"); // nom de ta collection Firestore
+  const container = document.querySelector(".testimonials-grid");
 
+  if (!container) {
+    console.error("Le conteneur .testimonials-grid est introuvable !");
+    return;
+  }
+
+  container.innerHTML = ""; // vider le contenu actuel
+
+  try {
+    const querySnapshot = await getDocs(testimonialsRef);
+
+    const allReviews = querySnapshot.docs.map(doc => doc.data());
+
+    // Tirer 3 avis aléatoires
+    function getRandomItems(arr, n) {
+      const shuffled = [...arr].sort(() => 0.5 - Math.random());
+      return shuffled.slice(0, n);
+    }
+
+    const randomReviews = getRandomItems(allReviews, 3);
+
+    randomReviews.forEach((data, index) => {
+      const dateObj = data.date ? new Date(data.date.seconds * 1000) : new Date();
+      const formattedDate = dateObj.toLocaleDateString('en-US', {
+        year: 'numeric', month: 'long', day: 'numeric'
+      });
+
+      const imageUrl = data.imageUrl || "https://i.pinimg.com/1200x/6e/59/95/6e599501252c23bcf02658617b29c894.jpg";
+
+      // Id unique pour chaque texte afin de cibler le bouton
+      const textId = `testimonial-text-${index}`;
+      const btnId = `testimonial-btn-${index}`;
+
+      const cardHTML = `
+        <div class="testimonial-card">
+          <div class="testimonial-header">
+            <img class="testimonial-image" src="${imageUrl}" alt="${data.author || "Client"}">
+            <div class="testimonial-author">
+              <h3>${data.author || "Anonyme"}</h3>
+              <p>${data.clientType || "Client"}</p>
+            </div>
+          </div>
+          <div class="rating">${data.rating ? data.rating.toFixed(1) : "N/A"}</div>
+          <p class="testimonial-text" id="${textId}" style="
+            max-height: 4.5em; /* environ 3 lignes */
+            overflow: hidden;
+            position: relative;
+            transition: max-height 0.3s ease;
+          ">
+            ${data.comment || ""}
+          </p>
+          <button id="${btnId}" style="
+            background: none;
+            border: none;
+            color: blue;
+            cursor: pointer;
+            padding: 0;
+            font-size: 0.9em;
+            margin-bottom: 8px;
+          ">Voir plus</button>
+          <div class="testimonial-date">${formattedDate}</div>
+        </div>
+      `;
+
+      container.insertAdjacentHTML("beforeend", cardHTML);
+
+      // Après insertion dans le DOM, gérer le clic du bouton "Voir plus"
+      const textEl = document.getElementById(textId);
+      const btnEl = document.getElementById(btnId);
+
+      // Si le texte est déjà court, cacher le bouton
+      if (textEl.scrollHeight <= textEl.clientHeight) {
+        btnEl.style.display = "none";
+      }
+
+      btnEl.addEventListener("click", () => {
+        if (btnEl.textContent === "Voir plus") {
+          textEl.style.maxHeight = textEl.scrollHeight + "px";
+          btnEl.textContent = "Voir moins";
+        } else {
+          textEl.style.maxHeight = "4.5em";
+          btnEl.textContent = "Voir plus";
+        }
+      });
+    });
+
+  } catch (error) {
+    console.error("Erreur lors du chargement des avis :", error);
+  }
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   loadDynamicTabsAndPizzas();
@@ -374,7 +466,9 @@ document.addEventListener("DOMContentLoaded", () => {
   loadGalleryModalImages();
   loadBlogPosts();
   loadDesserts();
-  loadBoissons()
+  loadBoissons();
+  loadTestimonials();
+
 
 
 });
