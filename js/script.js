@@ -381,7 +381,7 @@ async function loadTestimonials() {
     const querySnapshot = await getDocs(testimonialsRef);
 
     const allReviews = querySnapshot.docs.map(doc => doc.data());
-
+console.log(allReviews);
     // Tirer 3 avis aléatoires
     function getRandomItems(arr, n) {
       const shuffled = [...arr].sort(() => 0.5 - Math.random());
